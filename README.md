@@ -1,4 +1,8 @@
 # Smart Fridge AI Ecosystem
+[![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![Gemini AI](https://img.shields.io/badge/AI-Gemini%20Pro-8E75B5?style=flat&logo=googlegemini&logoColor=white)](https://openrouter.ai/)
+[![YouTube API](https://img.shields.io/badge/Integration-YouTube%20API-FF0000?style=flat&logo=youtube&logoColor=white)](https://developers.google.com/youtube/v3)
+[![Platform](https://img.shields.io/badge/Platform-Samsung%20Family%20Hub%20(Tizen)-034EA2?style=flat&logo=samsung&logoColor=white)](https://developer.samsung.com/smarttv)
 
 End-to-end smart kitchen platform: FastAPI backend, Gemini-powered recipe generation,
 YouTube tutorial embedding, 7-day velocity predictive restocking, and a 21:9 vertical
