@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Samsung Family Hub — Smart Fridge AI</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="hub-app">
+    <header class="hub-header">
+      <div class="brand">
+        <div class="hub-logo"></div>
+        <div>
+          <h1>Family Hub</h1>
+          <p class="subtitle">Smart Kitchen Assistant</p>
+        </div>
+      </div>
+
+      <div class="header-metrics">
+        <div class="metric-chip">
+          <span class="metric-label">Items</span>
+          <span id="stat-total-items" class="metric-value">0</span>
+        </div>
+        <div class="metric-chip warning">
+          <span class="metric-label">Low Stock</span>
+          <span id="stat-low-stock" class="metric-value">0</span>
+        </div>
+        <div class="system-status" id="system-status" title="System Connection Status">
+          <span class="status-dot"></span>
+          <span class="status-text">Connecting...</span>
+        </div>
+      </div>
+    </header>
+
+    <nav class="hub-nav">
+      <div class="nav-track">
+        <button class="nav-tab active" onclick="switchTab('inventory', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14M5 12h14M5 16h14M3 4h18v16H3z"/></svg>
+          Inventory
+        </button>
+        <button class="nav-tab" onclick="switchTab('recipes', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          AI Recipes
+        </button>
+        <button class="nav-tab" onclick="switchTab('restock', this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Restock Alerts
+        </button>
+        <div class="nav-indicator" id="nav-indicator"></div>
+      </div>
+    </nav>
+
+    <main class="hub-content">
+      <section id="view-inventory" class="tab-view active">
+        <div class="action-bar">
+          <div class="search-wrapper">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input 
+              type="text" 
+              id="search-input" 
+              placeholder="Search fridge or quick add..." 
+              oninput="filterOrAddItems()" 
+            />
+          </div>
+          <button class="btn btn-primary" onclick="openAddModal()">
+            <span>+ Add Item</span>
+          </button>
+        </div>
+
+        <div id="results-box" class="search-results-dropdown"></div>
+
+        <div class="section-title">
+          <h2>Fridge Inventory</h2>
+          <span class="badge" id="inventory-count-badge">0 items</span>
+        </div>
+
+        <div id="inventory-list" class="inventory-grid">
+          </div>
+      </section>
+
+      <section id="view-recipes" class="tab-view">
+        <div class="recipe-hero">
+          <div class="hero-text">
+            <h2>AI Chef Assistant</h2>
+            <p>Generate personalized recipes based instantly on your current fridge ingredients.</p>
+          </div>
+          <button id="generate-recipe-btn" class="btn btn-accent btn-large" onclick="generateRecipe()">
+            ✨ Generate Recipe
+          </button>
+        </div>
+
+        <div id="ai-loading-panel" class="ai-loading-panel hidden">
+          <div class="ai-glow-orb"></div>
+          <div class="pulse-dots">
+            <span></span><span></span><span></span>
+          </div>
+          <div id="ai-status-text" class="ai-status-text">Analyzing inventory...</div>
+        </div>
+
+        <div id="recipe-card-container" class="recipe-card hidden">
+          <div class="recipe-header">
+            <h3>Suggested Recipe</h3>
+            <button class="btn-icon" onclick="copyRecipeText()" title="Copy Recipe">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+          <div id="recipe-output" class="recipe-body"></div>
+          <div id="video-embed" class="video-container"></div>
+        </div>
+      </section>
+
+      <section id="view-restock" class="tab-view">
+        <div class="section-title">
+          <h2>Restock & Velocity Tracking</h2>
+          <p class="subtitle">Items running low based on weekly consumption speed</p>
+        </div>
+
+        <div id="restock-list" class="restock-grid">
+          </div>
+      </section>
+    </main>
+
+    <div id="add-modal" class="modal-backdrop" onclick="closeAddModalOnBackdrop(event)">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Add New Item</h3>
+          <button class="btn-close" onclick="closeAddModal()">×</button>
+        </div>
+        <form onsubmit="handleManualSubmit(event)">
+          <div class="form-group">
+            <label for="modal-item-name">Item Name</label>
+            <input type="text" id="modal-item-name" placeholder="e.g. Fresh Milk, Eggs, Avocado" required />
+          </div>
+          <div class="form-group">
+            <label for="modal-item-qty">Quantity</label>
+            <input type="number" id="modal-item-qty" value="1" min="1" required />
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" onclick="closeAddModal()">Cancel</button>
+            <button type="submit" class="btn btn-primary">Add to Fridge</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="toast-container" class="toast-container"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
