@@ -32,7 +32,7 @@ uvicorn main:app --reload --port 8000
 ```
 
 Set these in `.env`:
-- `GEMINI_API_KEY` — from Google AI Studio
+-'Openrouter_API'-https://openrouter.ai/
 - `YOUTUBE_API_KEY` — from Google Cloud Console (YouTube Data API v3)
 - `DATABASE_URL` — defaults to local SQLite; swap for Postgres in production
 
