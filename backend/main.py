@@ -1,18 +1,20 @@
-
 import os
 from typing import List, cast
+from contextlib import asynccontextmanager
 
 import requests
 from dotenv import load_dotenv
 
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from database import init_db, get_db, InventoryItem
 from schemas import (
     ItemSchema,
     ItemResponse,
+    ConsumeItemSchema,
     RecipeRequest,
     RecipeResponse,
     RestockAlert,
@@ -20,7 +22,7 @@ from schemas import (
 
 
 # ============================================================
-# ENVIRONMENT
+# ENVIRONMENT & CONSTANTS
 # ============================================================
 
 load_dotenv()
@@ -32,18 +34,32 @@ RESTOCK_THRESHOLD_DAYS = 7
 
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
-# Recommended for a completely free router.
-# OpenRouter selects an available free model.
+# Free OpenRouter router
 OPENROUTER_MODEL = "openrouter/free"
 
 
 # ============================================================
-# FASTAPI APPLICATION
+# EXTRA SCHEMAS
 # ============================================================
+
+class VelocityUpdateSchema(BaseModel):
+    weekly_velocity: float
+
+
+# ============================================================
+# LIFESPAN & FASTAPI APPLICATION
+# ============================================================
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_db()
+    yield
+
 
 app = FastAPI(
     title="Smart Fridge AI Ecosystem",
     version="2.0.0",
+    lifespan=lifespan,
 )
 
 
@@ -53,19 +69,10 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Restrict this in production
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-# ============================================================
-# STARTUP
-# ============================================================
-
-@app.on_event("startup")
-def on_startup():
-    init_db()
 
 
 # ============================================================
@@ -99,8 +106,8 @@ def generate_with_openrouter(prompt: str) -> str:
             {
                 "role": "system",
                 "content": (
-                    "You are an expert chef and nutritionist working inside "
-                    "a Smart Fridge AI application."
+                    "You are an expert chef and nutritionist working "
+                    "inside a Smart Fridge AI application."
                 ),
             },
             {
@@ -120,8 +127,6 @@ def generate_with_openrouter(prompt: str) -> str:
             timeout=60,
         )
 
-        # If OpenRouter returns an HTTP error,
-        # include useful information.
         if not response.ok:
             try:
                 error_data = response.json()
@@ -130,10 +135,7 @@ def generate_with_openrouter(prompt: str) -> str:
 
             raise HTTPException(
                 status_code=502,
-                detail=(
-                    "OpenRouter API error: "
-                    f"{error_data}"
-                ),
+                detail=f"OpenRouter API error: {error_data}",
             )
 
         data = response.json()
@@ -143,27 +145,17 @@ def generate_with_openrouter(prompt: str) -> str:
         if not choices:
             raise HTTPException(
                 status_code=502,
-                detail=(
-                    "OpenRouter returned no choices."
-                ),
+                detail="OpenRouter returned no choices.",
             )
 
-        message = choices[0].get(
-            "message",
-            {},
-        )
+        message = choices[0].get("message", {})
 
-        recipe_text = message.get(
-            "content"
-        )
+        recipe_text = message.get("content")
 
         if not recipe_text:
             raise HTTPException(
                 status_code=502,
-                detail=(
-                    "OpenRouter returned an empty "
-                    "response."
-                ),
+                detail="OpenRouter returned an empty response.",
             )
 
         return recipe_text
@@ -183,24 +175,18 @@ def generate_with_openrouter(prompt: str) -> str:
     except requests.RequestException as exc:
         raise HTTPException(
             status_code=502,
-            detail=(
-                "Could not connect to OpenRouter: "
-                f"{str(exc)}"
-            ),
+            detail=f"Could not connect to OpenRouter: {str(exc)}",
         )
 
     except Exception as exc:
         raise HTTPException(
             status_code=502,
-            detail=(
-                "OpenRouter request failed: "
-                f"{str(exc)}"
-            ),
+            detail=f"OpenRouter request failed: {str(exc)}",
         )
 
 
 # ============================================================
-# INVENTORY
+# INVENTORY ENDPOINTS
 # ============================================================
 
 @app.get(
@@ -210,10 +196,16 @@ def generate_with_openrouter(prompt: str) -> str:
 def list_items(
     db: Session = Depends(get_db),
 ):
-    return db.query(
-        InventoryItem
-    ).all()
+    """
+    Return all fridge inventory items.
+    """
 
+    return db.query(InventoryItem).all()
+
+
+# ============================================================
+# ADD ITEM
+# ============================================================
 
 @app.post(
     "/api/add-item",
@@ -223,6 +215,19 @@ def add_manual_item(
     item: ItemSchema,
     db: Session = Depends(get_db),
 ):
+    """
+    Add an item to the fridge.
+
+    If the item already exists, its quantity is increased.
+
+    Example:
+
+        Eggs = 10
+
+        Add 2 Eggs
+
+        Eggs = 12
+    """
 
     formatted = item.item_name.strip().title()
 
@@ -246,19 +251,56 @@ def add_manual_item(
         .first()
     )
 
+    # ItemSchema may or may not contain weekly_velocity.
+    provided_velocity = getattr(
+        item,
+        "weekly_velocity",
+        None,
+    )
+
+    # --------------------------------------------------------
+    # EXISTING ITEM
+    # --------------------------------------------------------
+
     if existing:
-        # Use setattr to avoid the SQLAlchemy Column descriptor type conflict
-        # reported by static type checkers for in-place assignment.
-        setattr(existing, "quantity", existing.quantity + item.quantity)
+
+        current_quantity = int(
+            getattr(existing, "quantity", 0) or 0
+        )
+
+        setattr(
+            existing,
+            "quantity",
+            current_quantity + item.quantity,
+        )
+
+        if (
+            provided_velocity is not None
+            and provided_velocity >= 0
+        ):
+            setattr(
+                existing,
+                "weekly_velocity",
+                float(provided_velocity),
+            )
 
         db.commit()
         db.refresh(existing)
 
         return existing
 
+    # --------------------------------------------------------
+    # NEW ITEM
+    # --------------------------------------------------------
+
     new_item = InventoryItem(
         item_name=formatted,
         quantity=item.quantity,
+        weekly_velocity=(
+            float(provided_velocity)
+            if provided_velocity is not None
+            else 0.0
+        ),
     )
 
     db.add(new_item)
@@ -268,11 +310,108 @@ def add_manual_item(
     return new_item
 
 
+# ============================================================
+# CONSUME / USE INVENTORY ITEM
+# ============================================================
+
+@app.patch(
+    "/api/items/{item_id}/consume",
+    response_model=ItemResponse,
+)
+def consume_item(
+    item_id: int,
+    payload: ConsumeItemSchema,
+    db: Session = Depends(get_db),
+):
+    """
+    Decrease an item's quantity when it is taken or used.
+
+    Example:
+
+        Current:
+            Eggs = 12
+
+        Request:
+            {
+                "quantity": 2
+            }
+
+        Result:
+            Eggs = 10
+    """
+
+    item = (
+        db.query(InventoryItem)
+        .filter(
+            InventoryItem.id == item_id
+        )
+        .first()
+    )
+
+    if not item:
+        raise HTTPException(
+            status_code=404,
+            detail="Item not found",
+        )
+
+    consume_quantity = payload.quantity
+
+    if consume_quantity < 1:
+        raise HTTPException(
+            status_code=400,
+            detail="Consume quantity must be at least 1.",
+        )
+
+    current_quantity = int(
+        getattr(item, "quantity", 0) or 0
+    )
+
+    # --------------------------------------------------------
+    # DON'T ALLOW NEGATIVE STOCK
+    # --------------------------------------------------------
+
+    if consume_quantity > current_quantity:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Not enough {item.item_name}. "
+                f"Available: {current_quantity}, "
+                f"requested: {consume_quantity}."
+            ),
+        )
+
+    # --------------------------------------------------------
+    # UPDATE QUANTITY
+    # --------------------------------------------------------
+
+    new_quantity = (
+        current_quantity - consume_quantity
+    )
+
+    setattr(
+        item,
+        "quantity",
+        new_quantity,
+    )
+
+    db.commit()
+    db.refresh(item)
+
+    return item
+
+
+# ============================================================
+# DELETE ITEM
+# ============================================================
+
 @app.delete("/api/items/{item_id}")
 def delete_item(
     item_id: int,
     db: Session = Depends(get_db),
 ):
+    """
+    Delete an inventory item.
+    """
 
     item = (
         db.query(InventoryItem)
@@ -298,6 +437,61 @@ def delete_item(
 
 
 # ============================================================
+# UPDATE CONSUMPTION VELOCITY
+# ============================================================
+
+@app.patch(
+    "/api/items/{item_id}/velocity",
+    response_model=ItemResponse,
+)
+def update_velocity(
+    item_id: int,
+    payload: VelocityUpdateSchema,
+    db: Session = Depends(get_db),
+):
+    """
+    Update weekly consumption velocity.
+
+    Example:
+
+        {
+            "weekly_velocity": 3.5
+        }
+    """
+
+    if payload.weekly_velocity < 0:
+        raise HTTPException(
+            status_code=400,
+            detail="Weekly velocity cannot be negative.",
+        )
+
+    item = (
+        db.query(InventoryItem)
+        .filter(
+            InventoryItem.id == item_id
+        )
+        .first()
+    )
+
+    if not item:
+        raise HTTPException(
+            status_code=404,
+            detail="Item not found",
+        )
+
+    setattr(
+        item,
+        "weekly_velocity",
+        payload.weekly_velocity,
+    )
+
+    db.commit()
+    db.refresh(item)
+
+    return item
+
+
+# ============================================================
 # AI RECIPE GENERATION
 # ============================================================
 
@@ -308,11 +502,6 @@ def delete_item(
 def generate_recipe(
     payload: RecipeRequest,
 ):
-
-    # --------------------------------------------------------
-    # Validate inventory
-    # --------------------------------------------------------
-
     if not payload.inventory:
         raise HTTPException(
             status_code=400,
@@ -331,10 +520,6 @@ def generate_recipe(
             detail="Inventory cannot be empty.",
         )
 
-    # --------------------------------------------------------
-    # Create recipe prompt
-    # --------------------------------------------------------
-
     inventory_text = ", ".join(inventory)
 
     prompt = f"""
@@ -344,8 +529,7 @@ Create exactly 2 practical recipes using this fridge inventory:
 
 Rules:
 
-1. Use the available fridge ingredients as the
-   main ingredients.
+1. Use the available fridge ingredients as the main ingredients.
 2. Do not invent unavailable major ingredients.
 3. Basic kitchen staples such as water, salt,
    cooking oil, pepper and common spices are allowed.
@@ -373,13 +557,13 @@ Steps:
 2. Step
 3. Step
 
-Nutrition information (per 100grams):
+Nutrition information (per 100 grams):
 - Calories:
 - Protein:
 - Carbohydrates:
 - Vitamins:
 - Minerals:
-- sugar:
+- Sugar:
 
 
 RECIPE 2
@@ -396,34 +580,26 @@ Steps:
 2. Step
 3. Step
 
-Nutrition information (per 100grams):
+Nutrition information (per 100 grams):
 - Calories:
 - Protein:
 - Carbohydrates:
 - Vitamins:
 - Minerals:
-- sugar:
-
+- Sugar:
 """
 
-    # --------------------------------------------------------
-    # Generate using OpenRouter
-    # --------------------------------------------------------
+    recipe_text = generate_with_openrouter(prompt)
 
-    recipe_text = generate_with_openrouter(
-        prompt
-    )
-
-    # ========================================================
+    # --------------------------------------------------------
     # YOUTUBE SEARCH
-    # ========================================================
+    # --------------------------------------------------------
 
     video_id = None
 
     if YOUTUBE_API_KEY:
 
         try:
-
             youtube_url = (
                 "https://www.googleapis.com/"
                 "youtube/v3/search"
@@ -467,14 +643,9 @@ Nutrition information (per 100grams):
                 )
 
         except Exception:
-            # YouTube is optional.
-            # Recipe generation should not fail
-            # because YouTube is unavailable.
+            # YouTube failure should never
+            # break recipe generation.
             video_id = None
-
-    # --------------------------------------------------------
-    # Final response
-    # --------------------------------------------------------
 
     return RecipeResponse(
         recipe=recipe_text,
@@ -493,6 +664,18 @@ Nutrition information (per 100grams):
 def restock_alerts(
     db: Session = Depends(get_db),
 ):
+    """
+    Calculate how many days of stock remain.
+
+    Formula:
+
+        daily velocity = weekly velocity / 7
+
+        days remaining =
+            quantity / daily velocity
+
+    Alert when remaining stock <= 7 days.
+    """
 
     alerts = []
 
@@ -503,29 +686,47 @@ def restock_alerts(
     for item in items:
 
         weekly_velocity = float(
-            getattr(item, "weekly_velocity", 0) or 0
+            getattr(
+                item,
+                "weekly_velocity",
+                0,
+            )
+            or 0
         )
 
         item_name = cast(
             str,
-            getattr(item, "item_name", ""),
-        )
-        quantity = cast(
-            int,
-            getattr(item, "quantity", 0) or 0,
+            getattr(
+                item,
+                "item_name",
+                "",
+            ),
         )
 
+        quantity = cast(
+            int,
+            getattr(
+                item,
+                "quantity",
+                0,
+            )
+            or 0,
+        )
+
+        # No consumption history
         if weekly_velocity <= 0:
             continue
 
         daily_velocity = (
-            weekly_velocity / 7
+            weekly_velocity / 7.0
         )
 
         if daily_velocity <= 0:
             continue
 
-        days_remaining = quantity / daily_velocity
+        days_remaining = (
+            quantity / daily_velocity
+        )
 
         if (
             days_remaining
@@ -536,9 +737,13 @@ def restock_alerts(
                 RestockAlert(
                     item_name=item_name,
                     quantity=quantity,
-                    weekly_velocity=int(round(weekly_velocity)),
+                    weekly_velocity=int(
+                        round(
+                            weekly_velocity
+                        )
+                    ),
                     days_remaining=round(
-                        int(days_remaining),
+                        days_remaining,
                         1,
                     ),
                 )
@@ -548,56 +753,11 @@ def restock_alerts(
 
 
 # ============================================================
-# UPDATE CONSUMPTION VELOCITY
-# ============================================================
-
-@app.patch(
-    "/api/items/{item_id}/velocity"
-)
-def update_velocity(
-    item_id: int,
-    weekly_velocity: float,
-    db: Session = Depends(get_db),
-):
-
-    if weekly_velocity < 0:
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                "Weekly velocity cannot "
-                "be negative."
-            ),
-        )
-
-    item = (
-        db.query(InventoryItem)
-        .filter(
-            InventoryItem.id == item_id
-        )
-        .first()
-    )
-
-    if not item:
-        raise HTTPException(
-            status_code=404,
-            detail="Item not found",
-        )
-
-    setattr(item, "weekly_velocity", weekly_velocity)
-
-    db.commit()
-    db.refresh(item)
-
-    return item
-
-
-# ============================================================
-# HEALTH CHECK
+# HEALTH
 # ============================================================
 
 @app.get("/health")
 def health():
-
     return {
         "status": "ok",
         "service": "Smart Fridge AI",
@@ -612,6 +772,7 @@ def health():
 def openrouter_status():
 
     if not OPENROUTER_API_KEY:
+
         return {
             "status": "error",
             "message": (
@@ -624,10 +785,10 @@ def openrouter_status():
         test_response = requests.post(
             OPENROUTER_URL,
             headers={
-                "Authorization": (
-                    f"Bearer {OPENROUTER_API_KEY}"
-                ),
-                "Content-Type": "application/json",
+                "Authorization":
+                    f"Bearer {OPENROUTER_API_KEY}",
+                "Content-Type":
+                    "application/json",
             },
             json={
                 "model": OPENROUTER_MODEL,
@@ -645,9 +806,14 @@ def openrouter_status():
         if not test_response.ok:
 
             try:
-                error = test_response.json()
+                error = (
+                    test_response.json()
+                )
+
             except Exception:
-                error = test_response.text
+                error = (
+                    test_response.text
+                )
 
             return {
                 "status": "error",
@@ -657,16 +823,46 @@ def openrouter_status():
 
         data = test_response.json()
 
+        choices = data.get(
+            "choices",
+            [],
+        )
+
+        response_text = ""
+
+        if choices:
+
+            response_text = (
+                choices[0]
+                .get("message", {})
+                .get("content", "")
+            )
+
         return {
             "status": "ok",
             "model": OPENROUTER_MODEL,
-            "message": "OpenRouter API is working",
-            "response": (
-                data
-                .get("choices", [{}])[0]
-                .get("message", {})
-                .get("content", "")
+            "message": (
+                "OpenRouter API is working"
             ),
+            "response": response_text,
+        }
+
+    except requests.Timeout:
+
+        return {
+            "status": "error",
+            "model": OPENROUTER_MODEL,
+            "message": (
+                "OpenRouter request timed out"
+            ),
+        }
+
+    except requests.RequestException as exc:
+
+        return {
+            "status": "error",
+            "model": OPENROUTER_MODEL,
+            "message": str(exc),
         }
 
     except Exception as exc:

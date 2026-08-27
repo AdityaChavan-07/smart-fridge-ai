@@ -1,7 +1,22 @@
-__pycache__/
-*.pyc
-venv/
+# Environment
 .env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Database
 *.db
-.DS_Store
+*.sqlite
+*.sqlite3
+
+# Node
 node_modules/
+
+# OS
+.DS_Store
+Thumbs.db

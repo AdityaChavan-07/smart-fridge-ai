@@ -1,21 +1,34 @@
-from pydantic import BaseModel, Field
 from typing import List
 
+from pydantic import BaseModel, Field
+
+
+# ==========================================================================
+# INVENTORY
+# ==========================================================================
 
 class ItemSchema(BaseModel):
     item_name: str
-    quantity: int = 1
+    quantity: int = Field(default=1, ge=0)
 
 
 class ItemResponse(BaseModel):
     id: int
     item_name: str
     quantity: int
-    weekly_velocity: int
+    weekly_velocity: float
 
     class Config:
         from_attributes = True
 
+
+class ConsumeItemSchema(BaseModel):
+    quantity: int = Field(..., ge=1)
+
+
+# ==========================================================================
+# AI RECIPES
+# ==========================================================================
 
 class RecipeRequest(BaseModel):
     inventory: List[str] = Field(..., min_length=1)
@@ -26,8 +39,12 @@ class RecipeResponse(BaseModel):
     youtube_video_id: str | None = None
 
 
+# ==========================================================================
+# RESTOCK
+# ==========================================================================
+
 class RestockAlert(BaseModel):
     item_name: str
     quantity: int
-    weekly_velocity: int
-    days_remaining: int
+    weekly_velocity: float
+    days_remaining: float

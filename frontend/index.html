@@ -8,6 +8,20 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <div class="voice-control">
+  <button
+    id="voice-btn"
+    class="voice-btn"
+    onclick="toggleVoiceControl()"
+    title="Voice Control"
+  >
+    🎤
+  </button>
+
+  <div id="voice-status" class="voice-status">
+    Voice Ready
+  </div>
+</div>
 </head>
 <body>
   <div class="hub-app">
@@ -113,16 +127,122 @@
         </div>
       </section>
 
-      <section id="view-restock" class="tab-view">
-        <div class="section-title">
-          <h2>Restock & Velocity Tracking</h2>
-          <p class="subtitle">Items running low based on weekly consumption speed</p>
+     <section id="view-restock" class="tab-view">
+
+  <!-- RESTOCK ALERTS -->
+  <div class="section-title">
+    <h2>Restock & Velocity Tracking</h2>
+    <p class="subtitle">
+      Items running low based on weekly consumption speed
+    </p>
+  </div>
+
+  <div id="restock-list" class="restock-grid">
+  </div>
+
+
+  <!-- ==========================================================
+       INSTANT GROCERY ORDER
+       ========================================================== -->
+
+  <div class="grocery-order-section">
+
+    <div class="section-title grocery-title">
+      <div>
+        <h2>🛒 Instant Grocery Order</h2>
+        <p class="subtitle">
+          Order groceries quickly from your preferred app
+        </p>
+      </div>
+    </div>
+
+
+    <div class="grocery-app-grid">
+
+      <!-- Blinkit -->
+      <button
+        class="grocery-app-card blinkit"
+        onclick="openGroceryApp('blinkit')"
+      >
+        <div class="grocery-app-icon">⚡</div>
+
+        <div class="grocery-app-info">
+          <strong>Blinkit</strong>
+          <span>Instant groceries</span>
         </div>
 
-        <div id="restock-list" class="restock-grid">
-          </div>
-      </section>
-    </main>
+        <span class="grocery-arrow">→</span>
+      </button>
+
+
+      <!-- Zepto -->
+      <button
+        class="grocery-app-card zepto"
+        onclick="openGroceryApp('zepto')"
+      >
+        <div class="grocery-app-icon">⚡</div>
+
+        <div class="grocery-app-info">
+          <strong>Zepto</strong>
+          <span>Groceries in minutes</span>
+        </div>
+
+        <span class="grocery-arrow">→</span>
+      </button>
+
+
+      <!-- Swiggy Instamart -->
+      <button
+        class="grocery-app-card instamart"
+        onclick="openGroceryApp('instamart')"
+      >
+        <div class="grocery-app-icon">🛍️</div>
+
+        <div class="grocery-app-info">
+          <strong>Swiggy Instamart</strong>
+          <span>Quick grocery delivery</span>
+        </div>
+
+        <span class="grocery-arrow">→</span>
+      </button>
+
+
+      <!-- bigbasket -->
+      <button
+        class="grocery-app-card bigbasket"
+        onclick="openGroceryApp('bigbasket')"
+      >
+        <div class="grocery-app-icon">🛒</div>
+
+        <div class="grocery-app-info">
+          <strong>bigbasket</strong>
+          <span>Online grocery shopping</span>
+        </div>
+
+        <span class="grocery-arrow">→</span>
+      </button>
+
+
+      <!-- JioMart -->
+      <button
+        class="grocery-app-card jiomart"
+        onclick="openGroceryApp('jiomart')"
+      >
+        <div class="grocery-app-icon">🛍️</div>
+
+        <div class="grocery-app-info">
+          <strong>JioMart</strong>
+          <span>Shop groceries online</span>
+        </div>
+
+        <span class="grocery-arrow">→</span>
+      </button>
+
+    </div>
+
+  </div>
+
+</section>
 
     <div id="add-modal" class="modal-backdrop" onclick="closeAddModalOnBackdrop(event)">
       <div class="modal-card">

@@ -367,6 +367,354 @@ body {
   }
 }
 
+/* ==========================================================================
+   INSTANT GROCERY ORDER
+   ========================================================================== */
+
+.grocery-order-section {
+  margin-top: 40px;
+  padding: 24px;
+
+  width: 100%;
+  box-sizing: border-box;
+
+  border-radius: 20px;
+
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border, #e5e7eb);
+
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+
+  overflow: hidden;
+}
+
+.grocery-title {
+  margin-bottom: 20px;
+}
+
+
+/* ==========================================================================
+   GROCERY APP GRID
+   ========================================================================== */
+
+.grocery-app-grid {
+  display: grid;
+
+  /* IMPORTANT:
+     Never force 5 cards into the narrow Family Hub screen.
+  */
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 14px;
+
+  width: 100%;
+  box-sizing: border-box;
+}
+
+
+/* ==========================================================================
+   GROCERY APP CARD
+   ========================================================================== */
+
+.grocery-app-card {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+
+  min-height: 82px;
+
+  padding: 14px;
+
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 16px;
+
+  background: #ffffff;
+
+  cursor: pointer;
+
+  text-align: left;
+
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+}
+
+
+.grocery-app-card:hover {
+  transform: translateY(-3px);
+
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+
+.grocery-app-card:active {
+  transform: scale(0.98);
+}
+
+
+/* ==========================================================================
+   ICON
+   ========================================================================== */
+
+.grocery-app-icon {
+  width: 42px;
+  height: 42px;
+
+  flex: 0 0 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 12px;
+
+  font-size: 20px;
+
+  background: #f3f4f6;
+}
+
+
+/* ============================================================
+   VOICE CONTROL
+   ============================================================ */
+
+.voice-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 12px;
+}
+
+.voice-btn {
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 50%;
+  background: var(--surface, #ffffff);
+  color: var(--text, #111827);
+  cursor: pointer;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
+}
+
+.voice-btn:hover {
+  transform: scale(1.05);
+}
+
+.voice-btn.listening {
+  background: #ef4444;
+  color: white;
+  animation: voicePulse 1.2s infinite;
+}
+
+.voice-status {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.75;
+  white-space: nowrap;
+}
+
+@keyframes voicePulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+  }
+
+  70% {
+    box-shadow: 0 0 0 15px rgba(239, 68, 68, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+/* ==========================================================================
+   APP INFORMATION
+   ========================================================================== */
+
+.grocery-app-info {
+  display: flex;
+  flex-direction: column;
+
+  min-width: 0;
+  flex: 1;
+}
+
+
+.grocery-app-info strong {
+  display: block;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  color: var(--text-primary, #111827);
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+.grocery-app-info span {
+  display: block;
+
+  margin-top: 3px;
+
+  font-size: 11px;
+
+  color: var(--text-secondary, #6b7280);
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* ==========================================================================
+   ARROW
+   ========================================================================== */
+
+.grocery-arrow {
+  flex: 0 0 auto;
+
+  margin-left: auto;
+
+  font-size: 20px;
+
+  color: #9ca3af;
+
+  transition:
+    transform 180ms ease;
+}
+
+
+.grocery-app-card:hover .grocery-arrow {
+  transform: translateX(3px);
+}
+
+
+/* ==========================================================================
+   INDIVIDUAL APP STYLING
+   ========================================================================== */
+
+.grocery-app-card.blinkit {
+  border-color: rgba(0, 200, 83, 0.25);
+}
+
+.grocery-app-card.blinkit .grocery-app-icon {
+  background: rgba(0, 200, 83, 0.10);
+}
+
+
+.grocery-app-card.zepto {
+  border-color: rgba(110, 60, 180, 0.25);
+}
+
+.grocery-app-card.zepto .grocery-app-icon {
+  background: rgba(110, 60, 180, 0.10);
+}
+
+
+.grocery-app-card.instamart {
+  border-color: rgba(255, 82, 0, 0.25);
+}
+
+.grocery-app-card.instamart .grocery-app-icon {
+  background: rgba(255, 82, 0, 0.10);
+}
+
+
+.grocery-app-card.bigbasket {
+  border-color: rgba(0, 120, 70, 0.25);
+}
+
+.grocery-app-card.bigbasket .grocery-app-icon {
+  background: rgba(0, 120, 70, 0.10);
+}
+
+
+.grocery-app-card.jiomart {
+  border-color: rgba(20, 100, 220, 0.25);
+}
+
+.grocery-app-card.jiomart .grocery-app-icon {
+  background: rgba(20, 100, 220, 0.10);
+}
+
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+
+/* Small Family Hub / tablet */
+
+@media (max-width: 700px) {
+
+  .grocery-order-section {
+    padding: 18px;
+  }
+
+  .grocery-app-grid {
+    grid-template-columns: 1fr;
+  }
+
+}
+
+
+/* Very small screens */
+
+@media (max-width: 420px) {
+
+  .grocery-order-section {
+    padding: 16px;
+  }
+
+  .grocery-app-card {
+    min-height: 72px;
+    padding: 12px;
+  }
+
+  .grocery-app-icon {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+  }
+
+}
+
+
+@media (max-width: 700px) {
+
+  .grocery-app-grid {
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+}
+
+
+@media (max-width: 480px) {
+
+  .grocery-app-grid {
+    grid-template-columns:
+      1fr;
+  }
+
+}
+
 /* Cards System & Grids */
 .section-title {
   display: flex;
