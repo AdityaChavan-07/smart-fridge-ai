@@ -9,22 +9,19 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <div class="voice-control">
-  <button
-    id="voice-btn"
-    class="voice-btn"
-    onclick="toggleVoiceControl()"
-    title="Voice Control"
-  >
-    🎤
-  </button>
+  
 
-  <div id="voice-status" class="voice-status">
-    Voice Ready
-  </div>
+
 </div>
 </head>
 <body>
   <div class="hub-app">
+    <div class="aurora-bg" aria-hidden="true">
+      <span class="aurora-blob blob-1"></span>
+      <span class="aurora-blob blob-2"></span>
+      <span class="aurora-blob blob-3"></span>
+    </div>
+
     <header class="hub-header">
       <div class="brand">
         <div class="hub-logo"></div>
@@ -88,7 +85,10 @@
         <div id="results-box" class="search-results-dropdown"></div>
 
         <div class="section-title">
-          <h2>Fridge Inventory</h2>
+          <div>
+            <h2>Fridge Inventory</h2>
+            <p class="select-hint">Tap items to pick ingredients for a recipe</p>
+          </div>
           <span class="badge" id="inventory-count-badge">0 items</span>
         </div>
 
@@ -102,8 +102,9 @@
             <h2>AI Chef Assistant</h2>
             <p>Generate personalized recipes based instantly on your current fridge ingredients.</p>
           </div>
+          <div id="selected-chips" class="selected-chips hidden"></div>
           <button id="generate-recipe-btn" class="btn btn-accent btn-large" onclick="generateRecipe()">
-            ✨ Generate Recipe
+            <span class="btn-sparkle">✨</span> Generate Recipe
           </button>
         </div>
 
@@ -264,6 +265,19 @@
             <button type="submit" class="btn btn-primary">Add to Fridge</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <div id="selection-bar" class="selection-bar hidden">
+      <div class="selection-info">
+        <span class="selection-count-orb" id="selection-count">0</span>
+        <span class="selection-label">ingredient<span id="selection-plural">s</span> selected</span>
+      </div>
+      <div class="selection-actions">
+        <button class="btn btn-secondary btn-sm" onclick="clearSelection()">Clear</button>
+        <button class="btn btn-accent btn-sm" onclick="generateFromSelection()">
+          ✨ Cook This
+        </button>
       </div>
     </div>
 
