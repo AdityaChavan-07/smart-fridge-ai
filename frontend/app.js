@@ -14,6 +14,7 @@ let activeInventory = [];
 let restockAlerts = [];
 let currentTab = "inventory";
 let aiTextCycleInterval = null;
+let selectedItems = new Set();
 
 
 // ==========================================================================
@@ -91,8 +92,16 @@ async function loadInventory() {
 
     activeInventory = await res.json();
 
+    const validIds = new Set(activeInventory.map((i) => i.id));
+    selectedItems.forEach((id) => {
+      if (!validIds.has(id)) {
+        selectedItems.delete(id);
+      }
+    });
+
     renderInventory();
     updateMetrics();
+    syncSelectionUI();
 
   } catch (err) {
     console.error("loadInventory Error:", err);
@@ -196,12 +205,22 @@ function renderInventory() {
         const quantity =
           Number(item.quantity) || 0;
 
+        const isSelected =
+          selectedItems.has(item.id);
+
         return `
           <div
-            class="item-card"
+            class="item-card selectable ${isSelected ? "selected" : ""}"
             id="inventory-item-${item.id}"
             style="animation-delay: ${index * 40}ms"
+            onclick="toggleItemSelection(${item.id})"
           >
+
+            <span class="select-check" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </span>
 
             <div class="item-info">
 
@@ -220,7 +239,7 @@ function renderInventory() {
             </div>
 
 
-            <div class="item-actions">
+            <div class="item-actions" onclick="event.stopPropagation()">
 
               <!-- =====================================================
                    WEEKLY VELOCITY CONTROLS
@@ -319,6 +338,139 @@ function renderInventory() {
       }
     )
     .join("");
+}
+
+
+// ==========================================================================
+// ITEM SELECTION FOR RECIPE GENERATION
+// ==========================================================================
+
+function toggleItemSelection(id) {
+
+  const card =
+    document.getElementById(`inventory-item-${id}`);
+
+  if (selectedItems.has(id)) {
+    selectedItems.delete(id);
+  } else {
+    selectedItems.add(id);
+
+    if (card) {
+      card.classList.add("pop");
+      setTimeout(() => card.classList.remove("pop"), 350);
+    }
+  }
+
+  renderInventory();
+  syncSelectionUI();
+}
+
+
+function clearSelection() {
+  selectedItems.clear();
+  renderInventory();
+  syncSelectionUI();
+}
+
+
+function syncSelectionUI() {
+  updateSelectionBar();
+  renderSelectedChips();
+}
+
+
+function updateSelectionBar() {
+
+  const bar =
+    document.getElementById("selection-bar");
+
+  const countEl =
+    document.getElementById("selection-count");
+
+  const pluralEl =
+    document.getElementById("selection-plural");
+
+  if (!bar) {
+    return;
+  }
+
+  const count = selectedItems.size;
+
+  if (countEl) {
+    countEl.textContent = count;
+  }
+
+  if (pluralEl) {
+    pluralEl.textContent = count === 1 ? "" : "s";
+  }
+
+  if (count > 0) {
+    bar.classList.remove("hidden");
+    requestAnimationFrame(() => bar.classList.add("show"));
+  } else {
+    bar.classList.remove("show");
+    setTimeout(() => {
+      if (selectedItems.size === 0) {
+        bar.classList.add("hidden");
+      }
+    }, 300);
+  }
+}
+
+
+function renderSelectedChips() {
+
+  const container =
+    document.getElementById("selected-chips");
+
+  const generateBtn =
+    document.getElementById("generate-recipe-btn");
+
+  if (!container) {
+    return;
+  }
+
+  if (selectedItems.size === 0) {
+    container.classList.add("hidden");
+    container.innerHTML = "";
+
+    if (generateBtn) {
+      generateBtn.innerHTML =
+        `<span class="btn-sparkle">✨</span> Generate Recipe`;
+    }
+
+    return;
+  }
+
+  const items =
+    activeInventory.filter((i) => selectedItems.has(i.id));
+
+  container.classList.remove("hidden");
+
+  container.innerHTML = `
+    <span class="chips-label">Cooking with:</span>
+    ${items
+      .map(
+        (i) => `
+          <span class="chip">
+            ${escapeHtml(i.item_name)}
+            <button onclick="toggleItemSelection(${i.id}); event.stopPropagation();" title="Remove">×</button>
+          </span>
+        `
+      )
+      .join("")}
+  `;
+
+  if (generateBtn) {
+    generateBtn.innerHTML =
+      `<span class="btn-sparkle">✨</span> Generate Recipe (${items.length})`;
+  }
+}
+
+
+function generateFromSelection() {
+  switchToTabByName("recipes");
+  generateRecipe();
 }
 
 
@@ -961,10 +1113,14 @@ async function generateRecipe() {
     );
 
 
-  const names =
-    activeInventory.map(
-      (i) => i.item_name
-    );
+  const usingSelection =
+    selectedItems.size > 0;
+
+  const names = usingSelection
+    ? activeInventory
+        .filter((i) => selectedItems.has(i.id))
+        .map((i) => i.item_name)
+    : activeInventory.map((i) => i.item_name);
 
 
   if (names.length === 0) {
@@ -1200,6 +1356,11 @@ function switchTab(
     tabEl.classList.add(
       "active"
     );
+  }
+
+
+  if (tabId === "recipes") {
+    renderSelectedChips();
   }
 
 
