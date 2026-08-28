@@ -56,6 +56,70 @@ body {
   box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
   border-left: 1px solid var(--bg-surface-border);
   border-right: 1px solid var(--bg-surface-border);
+  overflow-x: hidden;
+}
+
+/* ==========================================================================
+   AURORA BACKGROUND
+   ========================================================================== */
+
+.aurora-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.aurora-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.22;
+  animation: auroraDrift 16s infinite ease-in-out;
+}
+
+.blob-1 {
+  width: 260px;
+  height: 260px;
+  top: -60px;
+  left: -60px;
+  background: var(--primary);
+  animation-duration: 18s;
+}
+
+.blob-2 {
+  width: 220px;
+  height: 220px;
+  top: 30%;
+  right: -80px;
+  background: var(--accent);
+  animation-duration: 22s;
+  animation-delay: -6s;
+}
+
+.blob-3 {
+  width: 200px;
+  height: 200px;
+  bottom: -40px;
+  left: 20%;
+  background: var(--warning);
+  opacity: 0.12;
+  animation-duration: 20s;
+  animation-delay: -3s;
+}
+
+@keyframes auroraDrift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, 40px) scale(1.15); }
+  66% { transform: translate(-25px, -20px) scale(0.9); }
+}
+
+.hub-header,
+.hub-nav,
+.hub-content {
+  position: relative;
+  z-index: 1;
 }
 
 /* Header */
@@ -739,6 +803,13 @@ body {
   color: var(--text-muted);
 }
 
+.select-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  opacity: 0.8;
+}
+
 .inventory-grid, .restock-grid {
   display: flex;
   flex-direction: column;
@@ -753,8 +824,14 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   animation: cardIn 350ms var(--easing) forwards;
-  transition: transform 200ms var(--easing), box-shadow 200ms var(--easing);
+  transition: transform 200ms var(--easing), box-shadow 200ms var(--easing), border-color 200ms var(--easing), background 200ms var(--easing);
+  position: relative;
+}
+
+.item-card.selectable {
+  cursor: pointer;
 }
 
 .item-card:hover {
@@ -762,10 +839,68 @@ body {
   box-shadow: 0 8px 20px rgba(0,0,0,0.3);
 }
 
+.item-card:active {
+  transform: translateY(-2px) scale(0.985);
+}
+
 .item-card.deleting {
   transform: scale(0.9) translateX(30px);
   opacity: 0;
   transition: all 300ms var(--easing);
+}
+
+.item-card.selected {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, rgba(16,185,129,0.14) 0%, var(--bg-surface-elevated) 70%);
+  box-shadow: 0 0 0 1px var(--accent), 0 8px 24px var(--accent-glow);
+}
+
+.item-card.pop {
+  animation: selectPop 350ms var(--easing);
+}
+
+@keyframes selectPop {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.035); }
+  100% { transform: scale(1); }
+}
+
+/* Selection Checkbox */
+.select-check {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  border: 2px solid var(--bg-surface-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: transparent;
+  background: var(--bg-surface);
+  transition: all 220ms var(--easing);
+}
+
+.select-check svg {
+  width: 13px;
+  height: 13px;
+  transform: scale(0.5);
+  transition: transform 220ms var(--easing);
+}
+
+.item-card.selected .select-check {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--text-dark);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.item-card.selected .select-check svg {
+  transform: scale(1);
+}
+
+.item-card .item-info {
+  flex: 1;
+  min-width: 0;
 }
 
 .item-info {
@@ -859,6 +994,98 @@ body {
   font-size: 13px;
   color: var(--text-muted);
   line-height: 1.4;
+}
+
+/* Selected Ingredient Chips */
+.selected-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  animation: cardIn 300ms var(--easing);
+}
+
+.chips-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-right: 2px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--accent);
+  color: var(--text-main);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 6px 5px 12px;
+  border-radius: 999px;
+  animation: chipIn 250ms var(--easing);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.chip button {
+  background: rgba(16, 185, 129, 0.2);
+  border: none;
+  color: var(--accent);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 150ms ease, transform 150ms ease;
+}
+
+.chip button:hover {
+  background: var(--danger);
+  color: #fff;
+  transform: scale(1.1) rotate(90deg);
+}
+
+@keyframes chipIn {
+  from { opacity: 0; transform: scale(0.7); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Sparkle on the generate button */
+.btn-sparkle {
+  display: inline-block;
+  animation: sparkleSpin 2.4s infinite ease-in-out;
+}
+
+@keyframes sparkleSpin {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(20deg) scale(1.2); }
+}
+
+.btn-accent.btn-large {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-accent.btn-large::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255,255,255,0.35), transparent);
+  transform: skewX(-20deg);
+  animation: sheen 3.5s infinite;
+}
+
+@keyframes sheen {
+  0% { left: -60%; }
+  40% { left: 130%; }
+  100% { left: 130%; }
 }
 
 .ai-loading-panel {
@@ -1028,6 +1255,74 @@ body {
   justify-content: flex-end;
   gap: 10px;
   margin-top: 24px;
+}
+
+/* Floating Selection Bar */
+.selection-bar {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translate(-50%, 120%);
+  width: calc(100% - 48px);
+  max-width: 470px;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.5), 0 0 0 1px var(--accent), 0 0 24px var(--accent-glow);
+  z-index: 150;
+  transition: transform 320ms var(--easing), opacity 320ms var(--easing);
+  opacity: 0;
+}
+
+.selection-bar.show {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+
+.selection-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+.selection-count-orb {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--text-dark);
+  font-weight: 800;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: orbBounce 400ms var(--easing);
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+
+@keyframes orbBounce {
+  0% { transform: scale(0.6); }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.selection-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-sm {
+  padding: 8px 14px;
+  font-size: 12px;
 }
 
 /* Toast System */
