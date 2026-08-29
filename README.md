@@ -448,11 +448,18 @@ to show the required configuration without exposing secrets.
 
 
 ```markdown
-![Inventory](assets/Inventory.png)
-![Inventory_selected](assets/Inventory_selected.png)
-![AI_Recipes](assets/AI_Recipes.png)
-![Youtube](assets/YT.png)
-![Instant_tab](assets/Instant_tab.png)
+ [Inventory]
+<img src="assets/Inventory.png" width="1000">
+![Inventory_selected]
+<img src="assets/Inventory_selected.png" width="1000">
+![AI_Recipes]
+<img src="assets/AI_Recipes.png" width="1000">
+![Youtube]
+<img src="assets/YT.png" width="1000">
+![Restock_tab]
+<img src="assets/Restock_tab.png" width="1000">
+![Instant_tab]
+<img src="assets/instant_tab.png" width="1000">
 ```
 
 ---
