@@ -446,33 +446,16 @@ to show the required configuration without exposing secrets.
 
 # 📸 Screenshots
 
-> Add your application screenshots here.
-
-Recommended screenshots:
-
-1. Dashboard
-2. Inventory
-3. AI Recipe Generator
-4. Restock Alerts
-5. Grocery Apps
-6. Recipe + YouTube Tutorial
-
-Example:
 
 ```markdown
-![Dashboard](screenshots/dashboard.png)
+![Inventory](assets/Inventory.png)
+![Inventory_selected](assets/Inventory_selected.png)
+![AI_Recipes](assets/AI_Recipes.png)
+![Youtube](assets/YT.png)
+![Instant_tab](assets/Instant_tab.png)
 ```
 
 ---
-
-# 🎬 Demo
-
-A demonstration video is available showing the major features of the Smart Fridge AI Ecosystem.
-
-> Add your YouTube/demo video link here.
-
----
-
 # 🗺️ Current Status
 
 **🟢 Almost Complete**
