@@ -102,6 +102,33 @@
             <h2>AI Chef Assistant</h2>
             <p>Generate personalized recipes based instantly on your current fridge ingredients.</p>
           </div>
+
+          <div class="occasion-section">
+            <label for="recipe-context-input" class="occasion-label">
+              Anything special about today? <span>(optional)</span>
+            </label>
+
+            <div class="occasion-presets">
+              <button type="button" class="preset-chip" onclick="setOccasionPreset(this, '🎉 It\'s a party tonight — give me festive, crowd-pleasing recipes')">🎉 Party</button>
+              <button type="button" class="preset-chip" onclick="setOccasionPreset(this, '⚡ I\'m in a rush — give me something quick and easy')">⚡ Quick</button>
+              <button type="button" class="preset-chip" onclick="setOccasionPreset(this, '💪 I want something healthy and light')">💪 Healthy</button>
+              <button type="button" class="preset-chip" onclick="setOccasionPreset(this, '🌙 Cooking a proper sit-down dinner tonight')">🌙 Dinner</button>
+              <button type="button" class="preset-chip" onclick="setOccasionPreset(this, '🧒 Cooking for kids — keep it simple and mild')">🧒 Kid-friendly</button>
+            </div>
+
+            <div class="occasion-textarea-wrapper">
+              <textarea
+                id="recipe-context-input"
+                class="occasion-textarea"
+                placeholder="e.g. Today is a party, give me festive recipe ideas..."
+                rows="2"
+                maxlength="220"
+                oninput="handleOccasionInput(this)"
+              ></textarea>
+              <span class="occasion-count" id="occasion-count">0/220</span>
+            </div>
+          </div>
+
           <div id="selected-chips" class="selected-chips hidden"></div>
           <button id="generate-recipe-btn" class="btn btn-accent btn-large" onclick="generateRecipe()">
             <span class="btn-sparkle">✨</span> Generate Recipe
@@ -118,7 +145,10 @@
 
         <div id="recipe-card-container" class="recipe-card hidden">
           <div class="recipe-header">
-            <h3>Suggested Recipe</h3>
+            <div>
+              <h3>Suggested Recipe</h3>
+              <span id="recipe-occasion-tag" class="recipe-occasion-tag hidden"></span>
+            </div>
             <button class="btn-icon" onclick="copyRecipeText()" title="Copy Recipe">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
             </button>
