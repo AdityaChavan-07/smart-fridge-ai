@@ -1082,6 +1082,63 @@ function openGroceryApp(app) {
 
 
 // ==========================================================================
+// RECIPE OCCASION / CONTEXT INPUT
+// ==========================================================================
+
+function setOccasionPreset(btnEl, text) {
+
+  const textarea =
+    document.getElementById("recipe-context-input");
+
+  if (!textarea) {
+    return;
+  }
+
+  textarea.value = text;
+  handleOccasionInput(textarea);
+
+  textarea.focus();
+
+  textarea.classList.add("pulse-once");
+  setTimeout(() => textarea.classList.remove("pulse-once"), 400);
+
+  document
+    .querySelectorAll(".preset-chip")
+    .forEach((chip) => chip.classList.remove("active"));
+
+  if (btnEl) {
+    btnEl.classList.add("active");
+  }
+}
+
+
+function handleOccasionInput(textarea) {
+
+  const counter =
+    document.getElementById("occasion-count");
+
+  if (counter) {
+    counter.textContent =
+      `${textarea.value.length}/220`;
+  }
+
+  // Typing manually clears a "preset selected" highlight
+  document
+    .querySelectorAll(".preset-chip")
+    .forEach((chip) => chip.classList.remove("active"));
+}
+
+
+function getRecipeContext() {
+
+  const textarea =
+    document.getElementById("recipe-context-input");
+
+  return textarea ? textarea.value.trim() : "";
+}
+
+
+// ==========================================================================
 // AI RECIPE GENERATION
 // ==========================================================================
 
@@ -1134,6 +1191,10 @@ async function generateRecipe() {
   }
 
 
+  const occasion =
+    getRecipeContext();
+
+
   // Loading state
 
   if (btn) {
@@ -1163,7 +1224,8 @@ async function generateRecipe() {
         },
 
         body: JSON.stringify({
-          inventory: names
+          inventory: names,
+          context: occasion || null
         })
       }
     );
@@ -1190,6 +1252,21 @@ async function generateRecipe() {
     if (recipeOutput) {
       recipeOutput.textContent =
         data.recipe;
+    }
+
+
+    const occasionTag =
+      document.getElementById("recipe-occasion-tag");
+
+    if (occasionTag) {
+
+      if (occasion) {
+        occasionTag.textContent = `Tailored for: ${occasion}`;
+        occasionTag.classList.remove("hidden");
+      } else {
+        occasionTag.textContent = "";
+        occasionTag.classList.add("hidden");
+      }
     }
 
 
