@@ -522,11 +522,29 @@ def generate_recipe(
 
     inventory_text = ", ".join(inventory)
 
+    # --------------------------------------------------------
+    # OPTIONAL OCCASION / CONTEXT FROM THE USER
+    # (e.g. "it's a party tonight, give me festive ideas")
+    # --------------------------------------------------------
+
+    occasion = getattr(payload, "context", None)
+    occasion = occasion.strip() if occasion else ""
+
+    occasion_block = (
+        f"""
+Additional context from the user: "{occasion}"
+Tailor the recipe choices, portions, presentation, and tone to fit
+this context where reasonable, while still following the rules below.
+"""
+        if occasion
+        else ""
+    )
+
     prompt = f"""
 Create exactly 2 practical recipes using this fridge inventory:
 
 {inventory_text}
-
+{occasion_block}
 Rules:
 
 1. Use the available fridge ingredients as the main ingredients.
