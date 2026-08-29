@@ -447,8 +447,8 @@ to show the required configuration without exposing secrets.
 # 📸 Screenshots
 
 
-```markdown
- [Inventory]
+
+![Inventory]
 <img src="assets/Inventory.png" width="1000">
 ![Inventory_selected]
 <img src="assets/Inventory_selected.png" width="1000">
@@ -460,9 +460,7 @@ to show the required configuration without exposing secrets.
 <img src="assets/Restock_tab.png" width="1000">
 ![Instant_tab]
 <img src="assets/instant_tab.png" width="1000">
-```
 
----
 # 🗺️ Current Status
 
 **🟢 Almost Complete**
