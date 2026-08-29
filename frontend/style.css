@@ -996,6 +996,119 @@ body {
   line-height: 1.4;
 }
 
+/* Occasion / Context Input */
+.occasion-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 4px;
+  border-top: 1px dashed rgba(148, 163, 184, 0.2);
+}
+
+.occasion-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.occasion-label span {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.occasion-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.preset-chip {
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-surface-border);
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 200ms var(--easing);
+}
+
+.preset-chip:hover {
+  border-color: var(--accent);
+  color: var(--text-main);
+  transform: translateY(-1px);
+}
+
+.preset-chip:active {
+  transform: scale(0.95);
+}
+
+.preset-chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--text-dark);
+  box-shadow: 0 0 10px var(--accent-glow);
+  animation: selectPop 300ms var(--easing);
+}
+
+.occasion-textarea-wrapper {
+  position: relative;
+}
+
+.occasion-textarea {
+  width: 100%;
+  resize: none;
+  padding: 12px 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--bg-surface-border);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.occasion-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.occasion-textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.occasion-textarea.pulse-once {
+  animation: selectPop 400ms var(--easing);
+}
+
+.occasion-count {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  font-size: 10px;
+  color: var(--text-muted);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.recipe-occasion-tag {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-glow);
+  padding: 3px 10px;
+  border-radius: 999px;
+  max-width: 260px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  animation: chipIn 250ms var(--easing);
+}
+
 /* Selected Ingredient Chips */
 .selected-chips {
   display: flex;
