@@ -1,5 +1,5 @@
 from typing import List
-
+from typing import Optional
 from pydantic import BaseModel, Field
 
 
@@ -33,6 +33,9 @@ class ConsumeItemSchema(BaseModel):
 class RecipeRequest(BaseModel):
     inventory: List[str] = Field(..., min_length=1)
 
+
+    inventory: List[str]
+    context: Optional[str] = None
 
 class RecipeResponse(BaseModel):
     recipe: str
