@@ -458,7 +458,7 @@ to show the required configuration without exposing secrets.
 
 [Restock_tab]<img src="assets/Restock_tab.png" width="200">
 
-[Instant_tab]<img src="assets/instant_tab.png" width="200">
+[Instant_tab]<img src="assets/Instant_tab.png" width="200">
 
 # 🗺️ Current Status
 
