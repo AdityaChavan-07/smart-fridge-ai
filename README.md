@@ -449,17 +449,17 @@ to show the required configuration without exposing secrets.
 
 
 ![Inventory]
-<img src="assets/Inventory.png" width="1000">
+<img src="assets/Inventory.png" width="100">
 ![Inventory_selected]
-<img src="assets/Inventory_selected.png" width="1000">
+<img src="assets/Inventory_selected.png" width="100">
 ![AI_Recipes]
-<img src="assets/AI_Recipes.png" width="1000">
+<img src="assets/AI_Recipes.png" width="100">
 ![Youtube]
-<img src="assets/YT.png" width="1000">
+<img src="assets/YT.png" width="100">
 ![Restock_tab]
-<img src="assets/Restock_tab.png" width="1000">
+<img src="assets/Restock_tab.png" width="100">
 ![Instant_tab]
-<img src="assets/instant_tab.png" width="1000">
+<img src="assets/instant_tab.png" width="100">
 
 # 🗺️ Current Status
 
